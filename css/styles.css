@@ -1,0 +1,130 @@
+html {
+	background: #43cea2;
+	background: -webkit-linear-gradient(to bottom, #185a9d, #43cea2);
+	background: linear-gradient(to bottom, #185a9d, #43cea2);
+ 	color: #fefefe; 	
+	font-family: 'Rubik', Geneva, Tahoma, sans-serif;
+ 	font-size: 1.2em;
+ 	height: 100%;
+}
+body {
+	display: flex;
+	flex-direction: row;
+	padding: 0;
+	margin: 2% 0 0;
+}
+h1 {
+	font-size: 2em;
+	text-transform: uppercase;
+	padding: 0 0.5ch;
+	margin: 0 0 1.5ch;
+}
+.container {
+	display: flex;
+  	flex: 1;
+  	flex-wrap: wrap;
+	justify-content: center;
+	margin: 0 0 2ch;
+	min-height: 50vh;
+	padding: 9% 8%;
+	width: 45%;
+}
+.board {
+	display: flex;
+	flex-wrap: wrap;
+	margin: 0 0 1ch;
+	width: 100%;
+}
+.board.disabled {
+    pointer-events: none;
+    opacity: 0.72;
+}
+.square {
+	align-items: center;
+	border: 3px solid rgba(245, 245, 245, 0.9);
+	border-top: 0;
+	border-left: 0;
+	cursor: pointer;
+	display: flex;
+	flex: 1 0 32%;
+	height: 33.333%;
+	justify-content: center;
+}
+.square:nth-child(3n) {
+	border-right: 0;
+}
+.square:nth-last-child(-n+3) {
+	border-bottom: 0;
+}
+.clicked {
+	cursor: default;
+}
+.clicked span {
+  	animation: fadeIn ease 0.3s;
+	font-size: 15vh;
+	padding: 0 0 3.5vh;
+	line-height: 0.8;
+	margin: 0;
+	pointer-events: none;
+}
+@keyframes fadeIn {
+  0% {
+    opacity:0.25;
+  }
+  100% {
+    opacity:1;
+  }
+}
+.highlight {
+	color: #ffeb33;
+}
+.no-select {
+    user-select: none;
+}
+.sidebar {
+	align-items: center;
+	display: flex;
+	flex-direction: column;
+	float: right;
+	justify-content: center;	
+	padding: 0 3.5% 0 0;
+	width: 40%;
+}
+.controller {
+	text-align: center;
+	padding: 0 0.5ch;
+	margin: 0;
+}
+p {
+	display: block;
+	margin: 0 0 3.7ch;
+}
+button {
+	border-color: transparent;
+	border-radius: 5px;
+ 	color: #247c9e;
+ 	display: inline-block;
+	font-family: 'Rubik', Geneva, Tahoma, sans-serif;
+ 	font-size: 0.8em;
+ 	line-height: 1.2em;
+ 	padding: 5px 22px;
+ 	margin: 0 15% 2ch;
+}
+button:hover {
+	cursor: pointer;
+	opacity: 0.90;
+}
+button:active {
+	padding: 6px 25px 4px;
+}
+
+@media only screen and (max-width: 768px) {
+	body {
+		flex-direction: column;
+	}
+	.container,
+	.sidebar {
+		padding: 5% 2% 5% 5%;
+		width: 90%;
+	}
+} 
