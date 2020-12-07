@@ -1,25 +1,23 @@
+'use strict'
+import { checkWin } from './checkWin.js'
+import { minimax } from './miniMax.js'
+
 let state = {
 	xIndex: [],
 	oIndex: [],
 	currentPlayer: 'x'
 }
 
-const game = (() => {
+const game = () => {
 	const boardElement = document.getElementsByClassName('board')[0]
 	const squares = document.getElementsByClassName('square')
 	const controllerElement = document.getElementsByClassName('controller')[0]
-	const winningConditions = [
-	    [0, 1, 2], [3, 4, 5],
-	    [6, 7, 8], [0, 3, 6],
-	    [1, 4, 7], [2, 5, 8],
-	    [0, 4, 8], [2, 4, 6]
-	]
 
 	let xIndex = []
 	let oIndex = []
 	let currentPlayer
 	let robotPlayer
-	let availableMoves = [0, 1, 2, 3, 4, 5, 6, 7, 8]
+	let availableMoves
 
 	const handleClick = (mode) => {
 		robotPlayer = (mode === 1) ? true : false
@@ -50,101 +48,16 @@ const game = (() => {
 		clearBoard()
 		availableMoves = [0, 1, 2, 3, 4, 5, 6, 7, 8]		
 		robotPlayer = (mode === true) ? true : false
-		robotPlayer 
-				? updateStatus(
-				  	controllerElement, 
-				  	`New game against the computer. <br />${currentPlayer.toUpperCase()} has the first move. `, 
-				  	1
-		  		) 
-				: updateStatus(
-					controllerElement, 
-					`New two player game. <br />${currentPlayer.toUpperCase()} has the first move. `, 
-					1
-				)
+		updateStatus(
+					 controllerElement, 
+					 robotPlayer 
+					 			? `New game against the computer. <br />${currentPlayer.toUpperCase()} has the first move. `
+					 			: `New two player game. <br />${currentPlayer.toUpperCase()} has the first move. `
+					 			, 1
+		 			)
 	}
 
 	const updatePlayer = () => currentPlayer === 'x' ? 'o' : 'x'
-
-	const minimax = (newBoard, player) => {
-
-		let moves = []
-		let bestMove
-		let availableSpots = availableMoves.filter(s => typeof s == 'number')
-
-		if (minimaxWin(newBoard, 'x')) {
-			return { score: -10 }
-		}
-		else if (minimaxWin(newBoard, 'o')) {
-			return { score: 10 }
-		} 
-		else if (availableSpots.length === 0) {
-			return { score: 0 }
-		}
-
-		for (let i = 0; i < availableSpots.length; i++) {
-			let move = {}
-			move.index = newBoard[availableSpots[i]]
-			newBoard[availableSpots[i]] = player
-
-			if (player === 'x') {
-				let result = minimax(newBoard, 'o')
-				move.score = result.score
-			} 
-			else {
-				let result = minimax(newBoard, 'x')
-				move.score = result.score
-			}
-			newBoard[availableSpots[i]] = move.index
-			moves.push(move)
-		}
-
-		if(player === 'o') {
-			let bestScore = -10000
-			for(let i = 0; i < moves.length; i++) 
-			{
-				if (moves[i].score > bestScore) 
-				{
-					bestScore = moves[i].score
-					bestMove = i
-				}
-			}
-		} 
-		else {
-			let bestScore = 10000
-			for(let i = 0; i < moves.length; i++) 
-			{
-				if (moves[i].score < bestScore)
-				{
-					bestScore = moves[i].score
-					bestMove = i
-				}
-			}
-		}
-		return moves[bestMove]
-	}	
-
-	const minimaxWin = (board, player) => {
-		let results = []
-		for (let i = 0; i < board.length; i++) {
-		  const e = board[i];
-		  if (e === player) {
-		    results = results.concat(i);
-		  }
-		}
-		let plays = results
-		if (plays.length < 3) {
-			return null
-		}
-
-		let gameWon = null
-		for (let [index, win] of winningConditions.entries()) {
-			if (win.every(elem => plays.indexOf(elem) > -1)) {
-				gameWon = {index: index, player: player}
-				break
-			}
-		}
-		return gameWon
-	}
 
 	const computerMove = () => {
 		let roboMove
@@ -173,37 +86,26 @@ const game = (() => {
 		return currentPlayer
 	}
 
-	const checkWin = (playerMoves) => {
-		if (playerMoves.length < 3) {
-			return false
-		} else {
-			for (let win of winningConditions) {
-				for (i = 0, matchingMoves = 0; i < playerMoves.length; i++) {
-					win.includes(playerMoves[i]) ? matchingMoves++ : ''
-				}
-				if (matchingMoves === 3) {
-					win.map(i => boardElement.children[i].classList.add('highlight'))
-					return true
-					break
-				}
-			}
-		}
-		return false
-	}
-
-	const endGame = (winner) => {
+	const endGame = (winner, moves) => {
+		const playerIndex = winner === 'x' ? xIndex : oIndex
 		boardElement.classList.add('disabled')
 		if (winner) {
+			highlightWin(moves)
 			updateStatus(controllerElement, `${winner.toUpperCase()} wins the game! `, 1)
 		} else {
 			updateStatus(controllerElement, `It is a tie! `, 1)
 		}
 	}
 
+	const highlightWin = (moves) => {
+		moves.map(i => boardElement.children[i].classList.add('highlight'))
+	}
+
 	const squareClick = (e) => {
 		const el = e.target
 		const marker = markerElement(currentPlayer)
 		const clickedIndex = [...el.parentElement.children].indexOf(el)
+		let winningMoves = false
 
 		if (![...xIndex, ...oIndex].includes(clickedIndex)) {
 			const playerIndex = currentPlayer === 'x' ? xIndex : oIndex
@@ -216,7 +118,8 @@ const game = (() => {
 				currentPlayer
 			}
 			window.history.pushState(state, null, '')
-			checkWin(playerIndex) ? endGame(currentPlayer) : currentPlayer = nextTurn()
+			winningMoves = checkWin(playerIndex)
+			!winningMoves ? currentPlayer = nextTurn() : endGame(currentPlayer, winningMoves)
 		}
 	}
 
@@ -249,6 +152,7 @@ const game = (() => {
 	}
 
 	const refreshBoard = () => {
+		let winningMoves = false
 	  	xIndex = state.xIndex
 	  	oIndex = state.oIndex
 		currentPlayer = state.currentPlayer
@@ -256,17 +160,19 @@ const game = (() => {
 	  	clearBoard()
 	  	fillMarkers('x', xIndex)
 	  	fillMarkers('o', oIndex)
-		checkWin(playerIndex) ? endGame(currentPlayer) : currentPlayer = nextTurn()
+		winningMoves = checkWin(playerIndex)
+		!winningMoves ? currentPlayer = nextTurn() : endGame(currentPlayer, winningMoves)
 	}
-
+	
 	return { startGame, handleClick, refreshBoard }
-})()
+}
 
 window.onpopstate = (event) => {
 	if (event.state) {
 	  	state = event.state
-	  	game.refreshBoard()
+	  	game().refreshBoard()
 	}
 }
 
-game.startGame(true)
+window.game = game()
+window.game.startGame(true)
